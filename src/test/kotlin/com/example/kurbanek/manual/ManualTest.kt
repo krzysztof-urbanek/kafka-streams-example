@@ -6,6 +6,7 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.cloud.stream.binder.kafka.properties.KafkaBinderConfigurationProperties
 import org.springframework.cloud.stream.binder.kafka.streams.function.KafkaStreamsFunctionAutoConfiguration
@@ -14,11 +15,12 @@ import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.kafka.support.serializer.JsonSerializer
 import org.springframework.messaging.support.MessageBuilder
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class ManualTest {
 
-//    @Disabled
+    @Disabled("manual test")
     @Test
     fun manualTest() {
 
@@ -29,16 +31,16 @@ class ManualTest {
                 .setHeader(KafkaHeaders.MESSAGE_KEY, UUID.randomUUID().toString())
                 .setHeader(KafkaHeaders.TOPIC, "input")
                 .build()
-        ).get()
+        ).get(5, TimeUnit.SECONDS)
 
     }
 
     private fun producerFactory(): ProducerFactory<String, TestPayload> {
-        val configProps = HashMap<String, Any>()
-        configProps[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
-        configProps[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        configProps[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JsonSerializer::class.java
-        return DefaultKafkaProducerFactory(configProps)
+        return DefaultKafkaProducerFactory(mutableMapOf<String,Any>(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:9092",
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+        ))
     }
 
     private fun kafkaTemplate(): KafkaTemplate<String, TestPayload> {
